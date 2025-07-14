@@ -1,38 +1,44 @@
-from mpmath import mp, mpf, fsum, pi
+"""
+Structured π Approximation using Nilakantha Series + α·φ(n)
+Author: Y.Y.N. Li
+Date: 2025-07-14
 
-mp.dps = 50  # Precision
+This module approximates π using:
+    π ≈ Nilakantha(n) + α(n) · φ(n)
+Where:
+    - Nilakantha(n): partial sum of Nilakantha series
+    - φ(n): correction term (≈ π)
+    - α(n): dynamic scaling coefficient ~ C/n
+"""
 
-# --- Nilakantha series: π = 3 + Σ 4 / (n(n+1)(n+2)) with alternating signs ---
+from mpmath import mp, mpf, atan, fsum
+
+# Set default precision
+mp.dps = 50
+
+# --- Modal correction φ(n) (Machin-like) ---
+def compute_phi():
+    a_k = [4, -1]
+    b_k = [1, 1]
+    c_k = [5, 239]
+    return fsum([a * atan(mpf(b) / mpf(c)) for a, b, c in zip(a_k, b_k, c_k)])
+
+# --- Nilakantha series: 3 + 4/(2·3·4) - 4/(4·5·6) + ...
 def nilakantha_sum(n):
-    terms = []
+    terms = [mpf(3)]
+    sign = 1
     for k in range(1, n + 1):
-        sign = mpf(1) if k % 2 else mpf(-1)
-        denom = (2*k) * (2*k + 1) * (2*k + 2)
-        terms.append(sign * mpf(4) / denom)
-    return mpf(3) + fsum(terms)
+        a, b, c = 2*k, 2*k+1, 2*k+2
+        terms.append(sign * mpf(4) / (a * b * c))
+        sign *= -1
+    return fsum(terms)
 
-# --- Residual structure φₙ(n): fitted to match π - Nilakantha(n) ---
-def residual_phi_n(n, alpha=1.0, p=1.0):
-    return mpf(alpha) / n**p
+# --- Dynamic α controller ---
+def alpha_n(n, C=mp.pi):  # or use empirical C ≈ 0.78539816...
+    return C / n
 
-# --- Structured π using Nilakantha + φₙ(n) ---
-def pi_structured_nilakantha(n, alpha=1.0, p=1.0):
-    return nilakantha_sum(n) + residual_phi_n(n, alpha, p)
+# --- Structured π Approximation ---
+def pi_structured_nilakantha(n):
+    alpha = alpha_n(n)
+    return nilakantha_sum(n) + alpha * compute_phi()
 
-# --- Test over range of n ---
-def test_structured_nilakantha():
-    true_pi = mp.pi
-    print("Structured π Approximation: Nilakantha + φₙ(n)")
-    print("="*65)
-    for n in [10, 100, 500, 1000, 5000, 10000]:
-        # You can tune alpha and p for best fit
-        alpha = 0.7854  # Close to π − Nilakantha(∞)
-        p = 1.0
-        approx = pi_structured_nilakantha(n, alpha, p)
-        residual = abs(approx - true_pi)
-        print(f"n = {n:<6} | Structured π ≈ {approx}")
-        print(f"         | Residual     = {residual}")
-        print("-"*65)
-
-if __name__ == "__main__":
-    test_structured_nilakantha()
