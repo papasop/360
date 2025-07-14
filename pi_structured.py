@@ -3,23 +3,18 @@ Structured Pi Approximation Module
 Author: Y.Y.N. Li
 Date: 2025-07-14
 
-Structure:
-    π ≈ Nilakantha(n) + α · φ(n)
-
-Where:
-    - Nilakantha(n): partial sum of Nilakantha series
-    - φ(n): modal residual correction (Machin-like)
-    - α: optional scaling parameter for residual tuning
-
-Residual ≈ O(1/n²) or better with tuned α
+π ≈ Nilakantha(n) + α · φ(n)
+where:
+    - Nilakantha(n): Partial sum of the Nilakantha series
+    - φ(n): Modal correction (Machin-like)
+    - α: scaling parameter to avoid overcorrection
 """
 
 from mpmath import mp, mpf, fsum, atan
 
-# Set default precision
-mp.dps = 50
+mp.dps = 50  # Set high precision
 
-# --- Modal correction φ(n): Machin-like structure ---
+# --- φ(n): Machin-like constant correction ---
 def compute_phi():
     a_k = [4, -1]
     b_k = [1, 1]
@@ -29,27 +24,28 @@ def compute_phi():
         phi += a * atan(mpf(b) / mpf(c))
     return phi
 
-# --- Nilakantha Series ---
+# --- Nilakantha series: starts from 3 and adds terms from k=1 ---
 def nilakantha_sum(n):
-    total = mpf(3)
+    result = mpf(3)
     for k in range(1, n + 1):
-        term = mpf(4) / (mpf(2 * k) * (2 * k + 1) * (2 * k + 2))
+        term = mpf(4) / ( (2*k)*(2*k+1)*(2*k+2) )
         if k % 2 == 1:
-            total += term
+            result += term
         else:
-            total -= term
-    return total
+            result -= term
+    return result
 
 # --- Structured π approximation ---
-def pi_structured(n=1000, alpha=1.0):
+def pi_structured(n=1000, alpha=mpf(0.0)):
     """
-    π ≈ Nilakantha(n) + α * φ
+    π ≈ Nilakantha(n) + α · φ(n)
 
     Parameters:
         n (int): Number of terms in Nilakantha series
-        alpha (float or mpf): Scaling factor for residual φ
+        alpha (mpf): scaling for φ(n)
 
     Returns:
-        mpf: Approximated π
+        mpf: Structured approximation of π
     """
-    return nilakantha_sum(n) + mpf(alpha) * compute_phi()
+    return nilakantha_sum(n) + alpha * compute_phi()
+
