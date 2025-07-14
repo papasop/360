@@ -23,7 +23,7 @@ def run_tests():
 
     for n in [10, 100, 500, 1000, 5000, 10000]:
         α = α_values.get(n, 0.7854)  # Use closest pre-tuned α
-        approx_pi = pi_structured_nilakantha(n, alpha=α, p=p)
+        approx_pi = pi_structured(n, alpha=α, p=p)
         residual = abs(approx_pi - mp.pi)
         print(f"n = {n:<6} | α = {α}")
         print(f"         | Structured π ≈ {approx_pi}")
