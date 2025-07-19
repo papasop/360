@@ -16,7 +16,7 @@ def K(t):
 
 def t_equation(t): return np.tan(np.pi * t) + np.log(np.pi) / np.pi
 t_solution = fsolve(t_equation, 0.9)[0]
-delta = 0.111226
+delta = 0.11122594466992564  # 恢复默认 delta
 
 def g(p): return p - np.exp(p * np.tan(delta * p))
 def g_prime(p):
@@ -49,9 +49,11 @@ plt.figure(figsize=(10, 6))
 plt.plot(t1, K_values, label='K(t)', color='blue')
 plt.axhline(y=1, color='red', linestyle='--', label='K = 1')
 plt.axvline(x=t_solution, color='green', linestyle=':', label=f't ≈ {t_solution:.6f}')
+plt.annotate('K = 1 attractor', xy=(t_solution, 1), xytext=(t_solution + 0.01, 1.05),
+             arrowprops=dict(facecolor='black', shrink=0.05))
 plt.xlabel('t')
 plt.ylabel('K(t)')
-plt.title(r'$K(t) = -\frac{\pi \tan(\pi t)}{\log \pi}$ Simulation near K = 1')
+plt.title(r'$K(t) = -\frac{\pi \tan(\pi t)}{\log \pi}$ Simulation')
 plt.ylim(0.9, 1.1)
 plt.legend()
 plt.grid(True)
